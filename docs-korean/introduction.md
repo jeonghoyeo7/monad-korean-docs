@@ -1,25 +1,33 @@
-# Introduction
+# 소개
 
-Monad is a high-performance Ethereum-compatible L1. Monad materially advances the efficient frontier in the tradeoff between decentralization and scalability.
+지모나두! gmonad!
+안녕 형님 누님들~
+이 docs 사이트는 모나드의 공식 [docs 사이트](https://docs.monad.xyz/)를 한국어로 번역하고, 몇몇 내용들을 추가해서 한국 모나드 팬들이 모나드에 대해 쉽게 알 수 있도록 하려고 만들었어. 
+보다가 틀린 부분이 있다면 언제든지 baeksu에게 신고 부탁해 횽들.
 
-Monad introduces optimizations in four major areas, resulting in a blockchain with throughput of 10,000 transactions per second (tps):
+모나드는 엄청난 성능을 자랑하는 이더리움과 호환되는 L1이야. 모나드는 탈중앙화와 확정성을 효율적으로 제공하려고해.
 
-MonadBFT
+1. 먼저 엄청난 성능에 대해 Araboza.
 
-Deferred Execution
+모나드는 네 가지 주요 영역에서 최적화를 진행하고 있고, 그 결과 초당 무려 10,000건의 트랜잭션을 처리할 수 있는 블록체인이 될 수 있어.
 
-Parallel Execution
+- **MonadBFT**
+- **지연 실행**
+- **병렬 실행**
+- **MonadDb**
 
-MonadDb
+1. 그 다음 이더리움과의 호환성을 알아볼게.
 
-Monad's improvements address existing bottlenecks while preserving seamless compatibility for application developers (full EVM bytecode compatibility) and users (Ethereum RPC API compatibility). As a result, the rich landscape of Ethereum tooling and applied cryptography research can plug seamlessly into Monad while benefiting from improved throughput and scale:
+모나드의 개선 사항들은 기존의 병목 현상을 해결하면서도, 앱 개발자들과 사용자들에게 매끄러운 호환성을 유지해줘. 무슨 말이냐면, 
+- 앱 개발자들: 전체 EVM 바이트코드 호환성 -> 짠 코드 그대로 다시 사용할 수 있음
+- 사용자들: 이더리움 RPC API 호환성 -> 사용하던 지갑을 그대로 쓰면 됨
 
-applications (any dapp built for Ethereum)
+결국, 이더리움과의 호환성은 이더리움을 위해 개발된 많은 도구들을 모나드에서 그대로 사용할 수 있고, 더 나아가서 모나드의 빠른 처리 속도의 이점을 가질 수 있지.
 
-developer tooling (e.g. Hardhat, Apeworx, Foundry)
+- 앱 (이더리움을 위해 만들어진 모든 dapp)
+- 개발 도구 (예: Hardhat, Apeworx, Foundry)
+- 지갑 (예: MetaMask)
+- 분석/인덱서 생성 (예: Etherscan, Dune)
 
-wallets (e.g. MetaMask)
-
-analytics/indexing (e.g. Etherscan, Dune)
-
-The Monad client is built with a focus on performance and is written from scratch in C++ and Rust.  The subsequent pages survey the major changes in Monad as well as the interface for users.
+모나드 클라이언트(즉, 노드)는 성능에 중점을 두고 C++ 및 Rust로 처음부터 새롭게 만들어 지고 있어.
+다음 페이지에서는 모나드의 주요 변경 사항과 사용자 인터페이스에 대해 자세히 다룰게.
