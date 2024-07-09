@@ -1,7 +1,6 @@
-# Briefings
+# 브리핑 (Briefings)
 
-Here are several versions of the same briefing, depending on the user's knowledge of / interest in blockchain systems:
+여기 블록체인 시스템에 대한 지식이나 관심도에 따라 다양한 버전의 브리핑을 준비했습니다.
 
-Monad for users
-
-Monad for developers
+- [**사용자를 위한 모나드**](monad_for_users.md)
+- [**개발자를 위한 모나드**](monad_for_developers.md)

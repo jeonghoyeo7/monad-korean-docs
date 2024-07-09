@@ -1,209 +1,92 @@
-# Monad for developers
+# 개발자를 위한 모나드 설명서
 
-Monad is an Ethereum-compatible Layer-1 blockchain with 10,000 tps of throughput, 1-second block times, and single-slot finality.
+모나드는 초당 10,000 트랜잭션 처리량, 블록타임 1초, 단일 슬롯 확정성(finality, 블록이 확정되는 것)을 제공하는 이더리움 호환 레이어-1(L1) 블록체인입니다.
 
-Monad's implementation of the Ethereum Virtual Machine complies with the Shanghai fork; simulation of historical Ethereum transactions with the Monad execution environment produces identical outcomes. Monad also offers full Ethereum RPC compatibility so that users can interact with Monad using familiar tools like MetaMask and Etherscan.
+모나드의 EVM(Ethereum Virtual Machine) 구현은 [상하이 포크](https://www.evm.codes/?fork=shanghai)를 따르고 있습니다.
+모나드 실행 환경에서의 과거 이더리움 트랜잭션 시뮬레이션은 동일한 결과를 보입니다.
+모나드는 또한 전체 이더리움 RPC 호환성을 제공하여 사용자가 MetaMask 및 Etherscan과 같은 익숙한 도구를 사용하여 모나드를 사용할 수 있게 합니다.
 
-Monad accomplishes these performance improvements through the introduction of several major innovations:
+모나드는 다음과 같은 혁신을 도입하여 이러한 성능 향상을 달성하게 될 것입니다:
 
-MonadBFT (pipelined HotStuff consensus with additional research improvements), 
+- [MonadBFT](monad_bft.md) (개선된 파이프라인 HotStuff 합의)
+- [비동기 실행](asynchronos_execution.md) (합의와 실행 간 파이프라인을 통해 실행가능 시간을 크게 증가)
+- [병렬 실행](parallel_execution.md) (동시에 여러 트랜잭션을 실행)
+- [MonadDb](monad_db.md) (고성능 데이터베이스)
 
-Deferred Execution (pipelining between consensus and execution to significantly increase the execution budget)
+비록 모나드가 병렬 실행 및 파이프라인을 특징으로 하지만, 모나드의 블록은 선형이며 각 블록 내의 트랜잭션도 선형으로 정렬됩니다.
+(역자주: 즉, 트랜잭션,블록들이 의존성을 입력하지 않고 합의가 이루어짐)
 
-Parallel Execution
 
-MonadDb (high-performance state backend)
+# 트랜잭션 형식
 
-Although Monad features parallel execution and pipelining, it's important to note that blocks in Monad are linear, and transactions are linearly ordered within each block.
+| 속성              | 설명                                                                                   |
+| ----------------- | -------------------------------------------------------------------------------------- |
+| **주소 공간**      | 이더리움과 일치함. 20바이트 주소, ECDSA 사용                                              |
+| **트랜잭션 형식**  | 이더리움과 일치함. EIP-2718 준수, RLP로 인코딩됨. 접근 리스트(EIP-2930)는 지원되지만 필수는 아님. |
+| **지갑 호환성**    | 모나드는 MetaMask와 같은 표준 이더리움 지갑과 호환됨. 필요한 유일한 변경 사항은 RPC URL과 ChainId를 변경하는 것임. |
 
-Transaction format
-Address space
+# 스마트 컨트랙트
+모나드는 EVM 바이트코드를 지원하며 이더리움과 바이트코드 호환되지. 상하이 포크까지 모든 [opcodes](https://www.evm.codes/?fork=shanghai)를 지원합니다.
 
-matches Ethereum
-20-byte addresses using ECDSA
+# 합의(Consensus)
 
-Transaction format
+| 속성                         | 설명                                                                                                                                                                                                 |
+| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Sybil 저항 메커니즘**       | 지분 증명(PoS)                                                                                                                                                                                      |
+| **위임**                     | 허용됨 (프로토콜 내)                                                                                                                                                                                 |
+| **합의 메커니즘 및 파이프라인** | [MonadBFT](monad_bft.md)는 부분적으로 동기화된 조건에서 트랜잭션 순서 및 포함에 대한 합의를 이루기 위한 리더 기반 알고리즘입니다. 일반적으로 HotStuff를 기반에 두고, 추가 개선이 이루어졌습니다. MonadBFT는 일반적인 경우 통신 복잡도가 선형적으로 증가하는 정도의 파이프라인 2단계 BFT 알고리즘입니다.(역자주: 통신복잡도가 선형적으로 증가한다는 것은, 노드 갯수에 비례해서 복잡도가 올라간 다는 뜻) 대부분의 BFT 알고리즘과 마찬가지로 통신은 단계별로 진행되는데, 각 단계에서 리더는 서명된 메시지를 유권자(voter)에게 보내고, 유권자는 서명된 응답을 다시 보냅니다. 파이프라인을 통해 블록 k의 정족수 인증서(Quorum Certificate, QC) 또는 타임아웃 인증서(Timeout Certificate, TC)가 블록 k+1의 프로포절에 더해져서 전달될 수 있습니다. 타임아웃은 제곱으로 증가하는 메시지 교환을 필요하게 만듭니다. |
+| **블록 시간**                | 1초                                                                                                                                                                                                  |
+| **확정성**                   | 단일 슬롯. 전체 지분의 2/3이 블록 제안에 YES 투표를 하면 블록이 확정.                                                                                                                                 |
+| **멤풀**                     | [멤풀](shared_mempool.md)이 있습니다. 트랜잭션은 효율적인 전송을 위해 Erasure Code를 사용해서 브로드캐스트.                                                                                  |
+| **스팸 저항**                 | 사용자는 블록 포함("[운송 비용](carriage_cost_reserve_balance.md)")과 트랜잭션 실행("실행 비용")을 위해 비용을 지불함.                                                                                                          |
+| **합의 참가자**              | 직접 합의 참가자는 블록 제안에 투표하고 리더로서 활동함. 직접 참가자가 되려면 노드가 최소로 `MinStake`만큼 스테이크 되어 있어야하고, 지분 가중치 상위 `MaxConsensusNodes`위 안에 포함되어야함.                     |
+| **트랜잭션 해싱**            | 효율성을 위해 블록 프로포절은 [트랜잭션 해시로만](shared_mempool.md) 참조해서 이루어집니다 (즉 트랜잭션 자체를 다 보낼 필요가 없다는거지). 노드에 트랜잭션이 없으면 이웃에게 해시로 트랜잭션을 요청.                 |
+| **비동기 실행 및 운송 비용** | 모나드에서 합의와 실행은 파이프라인 방식으로 이루어집니다. 즉, 서로 순차적으로 이루어지지 않는다는 것이지. 노드는 공식 트랜잭션 순서에 대해 합의한 후 해당 순서의 트랜잭션들을 실행합니다 ([비동기 실행](asynchronous_execution.md)). 합의할 때, 실행 결과는 필요 없어, 트랜잭션의 순서만 결정하면 되기 때문입니다. 실행이 합의의 전제 조건인 블록체인에서는 실행 가능한 시간이 블록 시간의 일부분에 불과합니다. 합의와 실행을 파이프라인으로 처리하면 모나드에서 합의와 실행 각각 전체 블록 시간을 사용할 수 있습니다! 블록 프로포절은 트랜잭션 해시의 정렬된 목록과 D 블록 전의 상태 머클 루트를 포함해 (역자주: 상태 머클 루트는 트랜잭션들을 실행해야 얻을 수 있는 값). 지연 매개변수 D는 코드로 설정되며 초기에는 D=10으로 예상되고 있습니다(즉, 10블럭 전의 실행 결과를 다음 블록에 기록하는 것). 사용자는 트랜잭션을 블록에 포함시키기 위해 비용([운송 비용](https://example.com/carriage-cost))을 지불해야 합니다. 각 주소에 대해 노드는 두 가지 잔고(1: 운송비용을 위한 잔고, 2: 실행비용을 위한 잔고)가 필요합니다. 운송 비용은 트랜잭션이 블록에 포함될 때(합의) 예약 잔액에서 청구되고, 실행 시 실행 잔액에서 공제되며, 지연 기간 D 블록이 지나면 잔고로 다시 반환됩니다. 계정의 예약 잔고는 실질적으로 "진행 중인" 주문에 대한 예산이며, 이는 지불된 트랜잭션만 블록에 포함되도록 보장하기 위해서입니다. 각 계정에는 예약 잔고 목표가 있는데, 스마트 컨트랙트를 통해 바꿀 수 있습니다.  |
+| **상태 결정성**             | 확정성은 합의 시점에서 발생하며, 공식 트랜잭션 순서는 이 시점에서 정해지고, 모든 노드에 대해 완전히 똑같이 결정됩니다. 일반적으로 노드는 새로운 블록에 대한 트랜잭션을 1초 이내에 실행하는데, 상태 머클 루트의 D 블록 지연은 상태 루트 값을 검증하기 위한 것입니다. |
 
-matches Ethereum
-complies with EIP-2718, encoded with RLP.  Access lists (EIP-2930) are supported but not required.
 
-Wallet compatibility
+# 실행
 
-Monad is compatible with standard Ethereum wallets such as Metamask. The only change required is to alter the RPC URL and ChainId.
+각 블록에 대한 실행 단계는 해당 블록에 대한 합의가 이루어진 후 시작되고, 실행이 되는 도중에도 노드는 그 다음 블록에 대한 합의를 계속 진행할 수 있습니다.
 
-Smart contracts
-Monad supports EVM bytecode, and is bytecode-equivalent to Ethereum. All opcodes (as of the Shanghai fork) are supported.
+## 병렬 실행
 
-Consensus
-Sybil resistance mechanism
+트랜잭션이 정렬되고, 실행의 최종 목표는 트랜잭션들을 순차적으로 실행한 결과 상태에 도달하는 것입니다. 
+이를 위해 트랜잭션을 순차적으로 실행하는 것 말고 다른 방법이 있을까요?
+트랜잭션들을 한꺼번에 처리하면 어떨까요?
 
-Proof-of-Stake (PoS)
+모나드는 병렬 실행을 구현하고 있습니다.
 
-Delegation
+- 실행기는 트랜잭션을 실행하는 가상 머신이고, 모나드는 여러 실행기를 병렬로 실행.
+- 실행기는 트랜잭션을 받아 결과를 생성합니다. 결과는 트랜잭션 실행 중 `SLOAD`된 입력과 트랜잭션 결과로 `SSTORE`된 출력이 됩니다 (역자주: `SLOAD`는 읽기, `SSTORE`는 쓰기라고 생각하면 됨)
 
-Allowed (in-protocol)
+결과는 처음에 대기 상태로 생성되며, 트랜잭션의 원래 순서대로 커밋됩니다.
+결과가 커밋될 때, 출력이 현재 상태를 업데이트하고, 결과의 커밋 순서가 되었을 때, 모나드는 입력이 여전히 현재 상태와 일치하는지 확인합니다.
+일치하지 않으면 모나드는 트랜잭션을 다시 실행하고,
+이러한 동시성 제어 덕분에 모나드의 실행은 트랜잭션을 순차적으로 실행한 것과 동일한 결과를 보장할 수 있습니다.
 
-Consensus mechanism and pipelining
+트랜잭션이 다시 실행될 때, 많은 경우 필요한 입력이 캐시되어 있으므로 재실행은 일반적으로 비교적 빠르게 실행할 수 있습니다.
 
-MonadBFT is a leader-based algorithm for reaching agreement about transaction order and inclusion under partially synchronous conditions. Broadly characterized, it is a derivative of HotStuff with additional research improvements.
+## MonadDb: 고성능 상태 백엔드
+모든 활성 상태는 MonadDb에 저장되며, 이는 SSD에 저장된 머클 트리 데이터를 최적화한 스토리지라고 할 수 있습니다.
+업데이트는 머클 루트를 효율적으로 업데이트할 수 있도록 배치 처리되도록 설계되었습니다.
 
-MonadBFT is a pipelined 2-phase BFT algorithm with linear communication overhead in the common case. As in most BFT algorithms, communication proceeds in phases. At each phase, the leader sends a signed message to the voters, who send back signed responses.  Pipelining allows the quorum certificate (QC) or timeout certificate (TC) for block k to piggyback on the proposal for block k+1. Timeouts incur quadratic messaging.
+MonadDb는 메모리 내 캐싱을 이용하고, 효율적인 비동기 읽기 및 쓰기를 위해 asio를 사용합니다. 최적의 성능을 위해 노드는 최소 32GB의 RAM을 필요로 하죠.
 
-Block time
+# 이더리움과 모나드 비교: 사용자 관점
 
-1 second
-
-Finality
-
-Single-slot.  Once 2/3 of the stake weight has voted YES on a block proposal, it is finalized.
-
-Mempool
-
-There is a mempool. Transactions are erasure-coded and communicated using a broadcast tree for efficiency.
-
-Spam resistance
-
-Users pay for inclusion in blocks ("carriage cost") and transaction execution ("execution cost").
-
-Consensus participants
-
-Direct consensus participants vote on block proposals and serve as leaders. To serve as a direct participant, a node must have at least MinStake staked and be in the top MaxConsensusNodes participants by stake weight. These parameters are set in code.
-
-Transaction hashing
-
-For efficiency, block proposals refer to transactions by hash only.  If a node does not have a transaction, it will request the transaction by hash from a neighbor.
-
-Deferred execution and carriage costs
-
-In Monad, consensus and execution occur in a pipelined fashion.  Nodes come to consensus on the official transaction order prior to executing that ordering (Deferred Execution); the outcome of execution is not a prerequisite to consensus.
-
-In blockchains where execution is a prerequisite to consensus, the time budget for execution is a small fraction of the block time.  Pipelining consensus and execution allows Monad to expend the full block time on both consensus and execution.
-
-Block proposals consist of an ordered list of transaction hashes and a state merkle root from D blocks ago.  The delay parameter D is set in code; it is expected that D = 10 initially.
-
-The user must pay to have a transaction included in a block (the "carriage cost").  For each address, nodes maintain two balances:
-
-a reserve balance, used to pay for this carriage cost
-
-the execution balance, used to pay for transaction execution
-
-Carriage cost is charged to the reserve balance when the transaction is included in a block (consensus); it is deducted from the execution balance at execution time (double charge), and repaid to the reserve balance after the delay period of D blocks passes.
-
-An account's reserve balance is effectively a budget for "in-flight" orders; it exists to ensure that only transactions that are paid for are included in blocks.
-
-Each account has a target reserve balance which can be altered by interacting with an enshrined smart contract, e.g. for EOAs that anticipate sending a large number of inflight orders.
-
-State determinism 
-
-Finality occurs at consensus time; the official ordering of transactions is enshrined at this point, and the outcome is fully deterministic for any full node, who will generally execute the transactions for that new block in under 1 second.
-
-The D-block delay for state merkle roots is only for state root verification, for example for allowing a node to ensure that it didn't make a computation error.
-
-Execution
-The execution phase for each block begins after consensus is reached on that block, allowing the node to proceed with consensus on subsequent blocks.
-
-Parallel Execution
-Transactions are linearly ordered; the job of execution is to arrive at the state that results from executing that list of transactions serially.  The naive approach is just to execute the transactions one after another.  Can we do better?  Yes we can!
-
-Monad implements parallel execution:
-
-An executor is a virtual machine for executing transactions. Monad runs many executors in parallel.
-
-An executor takes a transaction and produces a result. A result is a list of inputs to and outputs of the transactions, where inputs are (ContractAddress, Slot, Value) tuples that were SLOADed in the course of execution, and outputs are (ContractAddress, Slot, Value) tuples that were SSTOREd as a result of the transaction.
-
-Results are initially produced in a pending state; they are then committed in the original order of the transactions. When a result is committed, its outputs update the current state. When it is a result’s turn to be committed, Monad checks that its inputs still match the current state; if they don’t, Monad reschedules the transaction. As a result of this concurrency control, Monad’s execution is guaranteed to produce the same result as if transactions were run serially.
-
-When transactions are rescheduled, many or all of the required inputs are cached, so re-execution is generally relatively inexpensive. Note that upon re-execution, a transaction may produce a different set of Inputs than the previous execution did;
-
-MonadDb: high-performance state backend
-All active state is stored in MonadDb, a storage backend for solid-state drives (SSDs) that is optimized for storing merkle trie data.  Updates are batched so that the merkle root can be updated efficiently.
-
-MonadDb implements in-memory caching and uses asio for efficient asynchronous reads and writes.  Nodes should have 32 GB of RAM for optimal performance.
-
-Comparison to Ethereum: User's Perspective
-Attribute	Ethereum	Monad
-Transactions/second (smart contract calls and transfers)
-
-~10
-
-~10,000
-
-Block time
-
-12s
-
-1s
-
-Finality
-
-2 epochs (12-18 min)
-
-Single-slot (1s)
-
-Bytecode standard
-
-EVM (Shanghai fork)
-
-EVM (Shanghai fork)
-
-RPC API
-
-Ethereum RPC API
-
-Ethereum RPC API
-
-Cryptography
-
-ECDSA
-
-ECDSA
-
-Accounts
-
-Last 20 bytes of keccak-256 of public key under ECDSA
-
-Last 20 bytes of keccak-256 of public key under ECDSA
-
-Consensus mechanism
-
-Gasper 
-(Casper-FFG finality gadget + 
-LMD-GHOST fork-choice rule)
-
-MonadBFT (pipelined HotStuff with additional research improvements)
-
-Mempool
-
-Yes
-
-Yes
-
-Transaction ordering
-
-Leader's discretion (in practice, PBS)
-
-Leader's discretion (default behavior: priority gas auction)
-
-Sybil-resistance mechanism
-
-PoS
-
-PoS
-
-Delegation allowed
-
-No; pseudo-delegation through LSTs
-
-Yes
-
-Hardware requirements (full node)
-
-4-core CPU
-16 GB RAM
-1 TB SSD
-25 Mbit/s bandwidth
-
-16-core CPU
-32 GB RAM
-2 TB SSD
-100 Mbit/s bandwidth
+| 속성                              | 이더리움                                                                                                            | 모나드                                                                                                                    |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| **초당 트랜잭션 수**              | 약 10                                                                                                               | 약 10,000                                                                                                                |
+| **블록 시간**                     | 12초                                                                                                                | 1초                                                                                                                      |
+| **확정성**                        | [2 epochs](https://example.com/2-epochs) (12-18분)                                                                  | 단일 슬롯 (1초)                                                                                                          |
+| **바이트코드 표준**               | [EVM (상하이 포크)](https://example.com/shanghai-fork)                                                              | [EVM (상하이 포크)](https://example.com/shanghai-fork)                                                                   |
+| **RPC API**                       | [Ethereum RPC API](https://example.com/ethereum-rpc)                                                                | [Ethereum RPC API](https://example.com/ethereum-rpc)                                                                     |
+| **암호학**                        | ECDSA                                                                                                               | ECDSA                                                                                                                    |
+| **계정**                          | ECDSA 공개 키의 keccak-256 마지막 20바이트                                                                            | ECDSA 공개 키의 keccak-256 마지막 20바이트                                                                               |
+| **합의 메커니즘**                 | Gasper (Casper-FFG 확정성 장치 + LMD-GHOST 포크 선택 규칙)                                                         | MonadBFT (추가 연구 개선 사항이 포함된 파이프라인 HotStuff)                                                               |
+| **멤풀**                          | 예                                                                                                                  | 예                                                                                                                       |
+| **트랜잭션 순서**                 | 리더의 재량 (실제로는 PBS)                                                                                          | 리더의 재량 (기본 동작: 우선 가스 경매)                                                                                   |
+| **Sybil 저항 메커니즘**           | PoS                                                                                                                 | PoS                                                                                                                      |
+| **위임 허용**                     | 아니요; LST를 통한 의사 위임                                                                                         | 예                                                                                                                       |
+| **하드웨어 요구 사항 (전체 노드)** | 4-코어 CPU<br>16 GB RAM<br>1 TB SSD<br>25 Mbit/s 대역폭                                                             | 16-코어 CPU<br>32 GB RAM<br>2 TB SSD<br>100 Mbit/s 대역폭                                                                 |

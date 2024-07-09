@@ -1,0 +1,1 @@
+- [**하드웨어 요구사항**](hardware_requirements.md)
