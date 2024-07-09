@@ -11,9 +11,9 @@
 ## IDE
 
 - [Remix](https://remix.ethereum.org/#lang=en&optimize=false&runs=200&evmVersion=null)는 대화형 Solidity IDE입니다. 추가 도구 설치 없이 Solidity 스마트 계약을 코딩하고 컴파일하는 가장 쉽고 빠른 방법입니다.
-- [VSCode](https://code.visualstudio.com/) + [Solidity 확장](https://marketplace.visualstudio.com/items?itemName=NomicFoundation.hardhat-solidity)
+- [VSCode](https://code.visualstudio.com/) + [솔리디티 확장](https://marketplace.visualstudio.com/items?itemName=NomicFoundation.hardhat-solidity)
 
-## 기본 솔리디티
+## 기본 솔리디티
 
 - [CryptoZombies](https://cryptozombies.io/en/course)는 EVM에서 dApp을 구축하는 것에 대한 종합적인 소개를 제공합니다. 코딩을 전혀 해본 적이 없는 사람부터 다른 분야의 숙련된 개발자까지 블록체인 개발을 탐색하려는 사람들에게 리소스와 수업을 제공합니다.
 - [Solidity by Example](https://solidity-by-example.org/)는 간단한 예제를 통해 점진적으로 개념을 소개합니다. 다른 언어에 대한 기본 경험이 있는 개발자에게 적합합니다.
