@@ -7,6 +7,8 @@
 
 * [기술 주제](technical_discussion.md)
   * [컨셉](concepts.md)
+    * [파이프라이닝](pipelining.md)
+    * [비동기 I/O](asynchronousio.md)
   * [왜 블록체인인가](why_blockchain.md)
   * [왜 모나드인가: 탈중앙+성능](why_monad.md)
   * [합의](consensus.md)
