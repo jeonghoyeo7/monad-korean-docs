@@ -34,4 +34,4 @@
         * [바이퍼](vyper_resources.md)
         * [허프](huff_resources.md)
 * [공식 링크](official_link.md)
-
+* [모나드 한국 커뮤니티 멤버 소개](koreanads_intro.md)
